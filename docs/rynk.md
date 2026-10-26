@@ -72,3 +72,7 @@ bash scripts/build-release.sh madula-iqs-rynk
 cargo install wasm-pack --locked
 bash scripts/build-rynk-web.sh
 ~~~
+
+## Madulaの表示配置
+
+keyboard.tomlの表示用shape/variantで、Vial定義と同じ左右分割・列の段差・親指キー配置を指定しています。2つのエンコーダーも表示します。仮想ジェスチャーは下段に残し、マトリクス番号とキー割り当ては変えません。この表示の更新には対応ファームウェアを書き込み、Rynkへ再接続する必要があります。
