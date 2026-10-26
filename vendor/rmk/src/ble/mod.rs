@@ -273,8 +273,12 @@ async fn run_ble_keyboard<
 
     let connection_loop = async {
         loop {
-            // On the dongle slot, advertise directed to the bonded dongle or
-            // as a seeking broadcast; on the normal profiles, plain HID.
+            // Bonded slots target only their peer. Other paired hosts must not
+            // repeatedly connect and occupy the link during profile switching.
+            let host_adv = match profile_manager.active_bond_info() {
+                Some(info) => Adv::Directed(info.info.identity.addr),
+                None => Adv::Host { name: product_name },
+            };
             #[cfg(feature = "dongle")]
             let adv = if crate::state::current_profile() == crate::ble::profile::DONGLE_PROFILE {
                 match profile_manager.active_bond_info() {
@@ -282,10 +286,10 @@ async fn run_ble_keyboard<
                     None => Adv::DongleSeeking,
                 }
             } else {
-                Adv::Host { name: product_name }
+                host_adv
             };
             #[cfg(not(feature = "dongle"))]
-            let adv = Adv::Host { name: product_name };
+            let adv = host_adv;
 
             // Wait for 10ms to ensure the USB is checked
             Timer::after_millis(10).await;

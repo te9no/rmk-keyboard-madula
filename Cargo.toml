@@ -27,6 +27,8 @@ json = "=0.12.4"
 xz2 = "=0.1.7"
 
 [features]
+# Experimental Windows Dial pacing; total angle stays 18 degrees per detent.
+dial-smooth = []
 boot-audit = ["panic-probe/boot-recovery"]
 lpps = []
 pmw3610 = []

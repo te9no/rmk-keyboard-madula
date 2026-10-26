@@ -44,3 +44,33 @@ mod tests {
         assert!(DESCRIPTOR.windows(2).any(|v| v == [0x75, 15]));
     }
 }
+
+
+// Experimental cadence: preserve the angle, direction and button in every report.
+// 6 degrees x 3 reports = the original 18-degree encoder detent.
+#[cfg(any(test, feature = "dial-smooth"))]
+pub fn split_rotation(angle: i16) -> [i16; 3] {
+    let first = angle / 3;
+    [first, first, angle - first * 2]
+}
+
+#[cfg(test)]
+mod pacing_tests {
+    use super::*;
+    #[test]
+    fn splitting_conserves_signed_rotation_and_button() {
+        for angle in -3600i16..=3600 {
+            let steps = split_rotation(angle);
+            assert_eq!(steps.iter().map(|&v| i32::from(v)).sum::<i32>(), i32::from(angle));
+            for button in [false, true] {
+                for step in steps {
+                    let word = u16::from_le_bytes(pack(button, step));
+                    assert_eq!(word & 1, u16::from(button));
+                    assert_eq!((word as i16) >> 1, step);
+                }
+            }
+        }
+        assert_eq!(split_rotation(180), [60, 60, 60]);
+        assert_eq!(split_rotation(-180), [-60, -60, -60]);
+    }
+}

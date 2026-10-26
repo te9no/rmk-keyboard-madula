@@ -22,6 +22,20 @@ impl Runnable for RadialController {
                 }
                 _ => continue,
             };
+            #[cfg(feature = "dial-smooth")]
+            if angle != 0 {
+                // Experimental: keep 18 degrees per detent. Do not fabricate
+                // extra rotation to exceed Windows' tool-dependent threshold.
+                for (index, step) in report::split_rotation(angle).into_iter().enumerate() {
+                    if index != 0 {
+                        embassy_time::Timer::after_millis(8).await;
+                    }
+                    rmk::channel::send_hid_report(
+                        rmk::hid::Report::RadialControllerReport(report::pack(button, step))
+                    ).await;
+                }
+                continue;
+            }
             rmk::channel::send_hid_report(
                 rmk::hid::Report::RadialControllerReport(report::pack(button, angle))
             ).await;

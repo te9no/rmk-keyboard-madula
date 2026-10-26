@@ -93,6 +93,8 @@ vial_enabled = false
 
 [ble]
 enabled = true
+# Match advertising power on active host/split links (issue #4).
+default_tx_power = 8
 
 [rmk]
 split_peripherals_num = 2

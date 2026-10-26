@@ -190,3 +190,5 @@ PMW3610の通信はRMKの実装と[3-wire SPIドライバー](https://github.com
 各プロジェクトの作者・貢献者に感謝します。取り込んだコードのライセンス表記はリポジトリ内に保持しています。
 
 Cornixの外付けLEDのPWM駆動は[numachang/cornix-rmk-custom](https://github.com/numachang/cornix-rmk-custom)を参考にしています。
+
+ホスト切替・送信出力・Dial検証版の変更点は[BLE/Dialの検証手順](docs/ble-dial-issues.md)を参照してください。
