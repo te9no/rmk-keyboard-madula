@@ -6,12 +6,12 @@ features=()
 case "$variant" in
   cornix-left|cornix-right) binary="$variant" ;;
   cornix-tp) binary=cornix-tp; features=(--features cornix-tp) ;;
-  madula-lpps-rynk) binary=madula-central; features=(--features lpps,battery-audit,madula-rynk) ;;
-  madula-tb-rynk) binary=madula-central; features=(--features pmw3610,battery-audit,madula-rynk) ;;
-  madula-iqs-rynk) binary=madula-central; features=(--features iqs9151,battery-audit,madula-rynk) ;;
-  madula-lpps) binary=madula-central; features=(--features lpps,battery-audit,madula-vial) ;;
-  madula-tb) binary=madula-central; features=(--features pmw3610,battery-audit,madula-vial) ;;
-  madula-iqs) binary=madula-central; features=(--features iqs9151,battery-audit,madula-vial) ;;
+  madula-lpps-rynk) binary=madula-central; features=(--features lpps,battery-audit,madula-rynk,dial-smooth) ;;
+  madula-tb-rynk) binary=madula-central; features=(--features pmw3610,battery-audit,madula-rynk,dial-smooth) ;;
+  madula-iqs-rynk) binary=madula-central; features=(--features iqs9151,battery-audit,madula-rynk,dial-smooth) ;;
+  madula-lpps) binary=madula-central; features=(--features lpps,battery-audit,madula-vial,dial-smooth) ;;
+  madula-tb) binary=madula-central; features=(--features pmw3610,battery-audit,madula-vial,dial-smooth) ;;
+  madula-iqs) binary=madula-central; features=(--features iqs9151,battery-audit,madula-vial,dial-smooth) ;;
   *) echo 'Unknown or unvalidated variant' >&2; exit 2 ;;
 esac
 cargo "+${RELEASE_TOOLCHAIN:-1.94.1}" build --release --locked --bin "$binary" "${features[@]}"

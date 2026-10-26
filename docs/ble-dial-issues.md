@@ -18,16 +18,16 @@ Madulaのkeyboard.tomlにdefault_tx_power = 8を指定します。広告と同�
 この設定を共有するCornix左右にも適用されます。cornix-tp.tomlは変更しません。
 電波到達性の改善候補で、遅延改善・電池寿命は未測定です。
 
-## Windows Dial (#5): 実験段階
+## Windows Dial (#5): rc.9配布版で有効
 
-通常版の1クリック18°は維持します。dial-smooth機能を有効にした検証版のみ、
+1クリック18°は維持します。rc.9ではMadulaの全6配布構成でdial-smooth機能を有効にし、
 1クリックを6°×3回、送信キューへの投入間隔8msに分けます。BLE上の実到着間隔は接続間隔にも依存します。
 ボタン状態・符号・角度合計を維持します。回転処理中の追加イベント処理は最大約16ms＋キュー待ち遅延します。
-急速な連続回転の滞留、ボタンの応答も確認が必要です。通常配布版では有効にしません。
+急速な連続回転の滞留、ボタンの応答も確認が必要です。手動ビルドでdial-smoothを外すと従来の一括送信に戻せます。
 
 比較項目: USB/BLEそれぞれで、1秒おきの左右1クリック、連続回転、押し回し。
 Windowsのメニュー・スクロール・音量を個別に確認します。
-分割送信で改善するという根拠はIssue内の試作報告で、今回の18°版の実機改善は未確認です。
+分割送信で改善するという根拠はIssue内の試作報告で、今回の18°版はMadula TB Vial版の実機でユーザーから「ダイヤルはオッケー」と確認されました。個別のWindowsツールや他構成の網羅確認は未実施です。
 Microsoft仕様上は相対角度を報告し、アプリ側で回転イベントの解像度を設定します。
 https://learn.microsoft.com/en-us/windows-hardware/design/component-guidelines/radial-controller-input-reports
 https://learn.microsoft.com/en-us/uwp/api/windows.ui.input.radialcontroller.rotationresolutionindegrees
