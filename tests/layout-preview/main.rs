@@ -10,5 +10,10 @@ fn main() {
     let variant = &decoded.variants[decoded.default_variant as usize];
     assert_eq!(variant.keys.len(), 64);
     assert_eq!(variant.encoders.len(), 2);
+    let lang1 = variant.keys.iter().find(|k| (k.row, k.col) == (3,12)).unwrap();
+    assert!((lang1.r + 23.0).abs() < 0.001);
+    assert!(lang1.rect.y < 4.7, "LANG1 must rotate back into the thumb cluster");
+    let left_thumb = variant.keys.iter().find(|k| (k.row, k.col) == (3,5)).unwrap();
+    assert!((left_thumb.r - 23.0).abs() < 0.001);
     println!("{}", serde_json::to_string_pretty(&decoded).unwrap());
 }
