@@ -26,6 +26,12 @@ pub(crate) fn current_battery_status() -> BatteryStatus {
     BATTERY_STATUS.lock(|c| c.get())
 }
 
+#[cfg(feature = "_ble")]
+#[path = "external_battery.rs"]
+mod external_battery;
+#[cfg(feature = "_ble")]
+pub use external_battery::report_external_battery_level;
+
 /// Reads charging state from a GPIO pin and publishes ChargingStateEvent.
 ///
 /// This input device monitors a charging state pin and publishes events when

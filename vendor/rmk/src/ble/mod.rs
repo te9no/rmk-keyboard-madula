@@ -490,9 +490,17 @@ async fn gatt_events_task(server: &Server<'_>, conn: &GattConnection<'_, '_, Def
                 let mut cccd_updated = false;
                 let result = match &gatt_event {
                     GattEvent::Read(event) => {
+                        let mut battery_unavailable = false;
                         if event.handle() == level.handle {
-                            let value = server.get(&level);
-                            debug!("Read GATT Event to Level: {:?}", value);
+                            // Refresh reads from the measurement cache, including before
+                            // the notification task starts. BAS has no unknown percentage.
+                            if let rmk_types::battery::BatteryStatus::Available { level: Some(value), .. } =
+                                crate::input_device::battery::current_battery_status()
+                            {
+                                battery_unavailable = server.set(&level, &value).is_err();
+                            } else {
+                                battery_unavailable = true;
+                            }
                         } else {
                             #[cfg(feature = "split")]
                             let peripheral_level =
@@ -507,10 +515,12 @@ async fn gatt_events_task(server: &Server<'_>, conn: &GattConnection<'_, '_, Def
                             }
                         }
 
-                        if conn.raw().security_level()?.encrypted() {
-                            None
-                        } else {
+                        if !conn.raw().security_level()?.encrypted() {
                             Some(AttErrorCode::INSUFFICIENT_ENCRYPTION)
+                        } else if battery_unavailable {
+                            Some(AttErrorCode::UNLIKELY_ERROR)
+                        } else {
+                            None
                         }
                     }
                     GattEvent::Write(event) => {

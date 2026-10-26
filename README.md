@@ -163,6 +163,8 @@ cargo +1.94.1 build --release --locked --bin madula-central --features iqs9151,b
 
 `lpps` / `pmw3610` / `iqs9151`は同時に有効化できません。
 `battery-audit`は対応回路の電圧監視・残量推定を有効にする機能名です。
+MadulaのNiMH 1本用の推定残量はBluetoothのバッテリー表示にも反映されます。未計測・測定異常は0%として報告せず、充電状態は不明として扱います。残量が変わらない間は重複した更新を送信しません。
+
 ELFは`target/thumbv7em-none-eabihf/release/`に生成されます。
 UF2を含む配布用パッケージは[`build-release.sh`](scripts/build-release.sh)を参照してください（Cornix左右・LPPS・TB・IQS）。
 

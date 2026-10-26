@@ -22,7 +22,7 @@ bind_interrupts!(pub struct Irqs { SAADC => saadc::InterruptHandler; });
 
 #[embassy_executor::task]
 pub async fn run(mut adc: saadc::Saadc<'static, 1>) {
-    Timer::after_secs(5).await;
+    // Measure before the host requests its first battery level.
     if with_timeout(Duration::from_secs(1), adc.calibrate()).await.is_err() {
         log::warn!("Battery audit: ADC calibration timeout; diagnostics stopped");
         return;
@@ -30,6 +30,8 @@ pub async fn run(mut adc: saadc::Saadc<'static, 1>) {
     loop {
         let mut sample = [0i16; 1];
         if with_timeout(Duration::from_secs(1), adc.sample(&mut sample)).await.is_err() {
+            rmk::input_device::battery::report_external_battery_level(None);
+            LATEST.store(0, Ordering::Relaxed);
             log::warn!("Battery audit: ADC sample timeout; diagnostics stopped");
             return;
         }
@@ -39,6 +41,7 @@ pub async fn run(mut adc: saadc::Saadc<'static, 1>) {
         match voltage::millivolts(raw) {
             Some((pin, battery)) => {
                 let estimate = voltage::estimated_percent(battery);
+                rmk::input_device::battery::report_external_battery_level(estimate);
                 let seconds = embassy_time::Instant::now().as_secs();
                 LATEST.store(((seconds.min(0x00ff_ffff) as u32) << 8) |
                     estimate.map_or(0, |p| u32::from(p) + 1), Ordering::Relaxed);
@@ -46,6 +49,7 @@ pub async fn run(mut adc: saadc::Saadc<'static, 1>) {
                     raw, pin, battery, estimate);
             }
             None => {
+                rmk::input_device::battery::report_external_battery_level(None);
                 LATEST.store(0, Ordering::Relaxed);
                 log::warn!("Battery: A0 out of range raw={}; voltage invalid", raw);
             }

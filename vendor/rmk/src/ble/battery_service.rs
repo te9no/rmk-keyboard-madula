@@ -154,18 +154,24 @@ impl<P: PacketPool> Runnable for BleBatteryServer<'_, '_, '_, P> {
         // 100%, no recent key activity, etc.) doesn't have to wait for a state
         // change to learn the level. If the cache is empty, fall through to
         // waiting on the event stream.
+        let mut last_sent = None;
         let first_report = async {
             if let BatteryStatus::Available { level: Some(level), .. } =
                 crate::input_device::battery::current_battery_status()
                 && self.battery_level.notify(self.conn, &level, true).await.is_ok()
             {
+                last_sent = Some(level);
                 return;
             }
             loop {
-                if let BatteryStatus::Available { level: Some(level), .. } = self.sub.next_message_pure().await.0 {
+                self.sub.next_message_pure().await;
+                if let BatteryStatus::Available { level: Some(level), .. } =
+                    crate::input_device::battery::current_battery_status()
+                {
                     if let Err(e) = self.battery_level.notify(self.conn, &level, true).await {
                         error!("Failed to notify battery level: {:?}", e);
                     } else {
+                        last_sent = Some(level);
                         // The first report is sent, return to continue
                         return;
                     }
@@ -179,14 +185,16 @@ impl<P: PacketPool> Runnable for BleBatteryServer<'_, '_, '_, P> {
 
         // Report the battery level.
         loop {
-            let battery_status = self.wait_until_battery_status_available().await;
-
-            // Check if there's a newer event, if not, use original battery status event
-            let state = self.sub.try_next_message_pure().unwrap_or(battery_status);
-            if let BatteryStatus::Available { level: Some(level), .. } = state.0
-                && let Err(e) = self.battery_level.notify(self.conn, &level, true).await
+            self.wait_until_battery_status_available().await;
+            // Use the newest sample, not a queued old low-battery event.
+            if let BatteryStatus::Available { level: Some(level), .. } =
+                crate::input_device::battery::current_battery_status()
+                && last_sent != Some(level)
             {
-                error!("Failed to notify battery level: {:?}", e);
+                match self.battery_level.notify(self.conn, &level, true).await {
+                    Ok(()) => last_sent = Some(level),
+                    Err(e) => error!("Failed to notify battery level: {:?}", e),
+                }
             }
         }
     }

@@ -36,7 +36,7 @@ jobs:
           python3 -m unittest discover -s tests
           rustc +1.94.1 --test src/lpps_motion.rs -o /tmp/lpps-tests
           /tmp/lpps-tests
-          rustc +1.94.1 --test src/battery_voltage.rs -o /tmp/battery-tests
+          rustc +1.94.1 --test tests/battery-report.rs -o /tmp/battery-tests
           /tmp/battery-tests
           rustc +1.94.1 --test src/iqs9151_gestures.rs -o /tmp/iqs-tests
           /tmp/iqs-tests
