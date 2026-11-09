@@ -193,4 +193,4 @@ Cornixの外付けLEDのPWM駆動は[numachang/cornix-rmk-custom](https://github
 
 ホスト切替・送信出力・Dial検証版の変更点は[BLE/Dialの検証手順](docs/ble-dial-issues.md)を参照してください。
 
-右手側をPC接続先にする[右セントラル試作版（TB / Rynk）](docs/right-central.md)もビルドできます。通常版とは別の3台用UF2セットで、実機検証前です。
+右手側をPC接続先にする[右セントラル試作版（TB・LPPS・IQS / Rynk）](docs/right-central.md)もビルドできます。通常版とは別に、共通の左側とモジュール別の右側・Madula側UF2を作成でき、実機検証前です。

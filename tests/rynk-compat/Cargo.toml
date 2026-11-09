@@ -14,3 +14,6 @@ name = "wire-peer"
 path = "wire_peer.rs"
 [lib]
 path = "lib.rs"
+
+[dev-dependencies]
+log = "0.4"

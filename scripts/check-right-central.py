@@ -28,7 +28,8 @@ for cfg in configs:
     assert cfg["storage"]["start_addr"] == 0xD4000
     assert cfg["storage"]["start_addr"] + 4096*cfg["storage"]["num_sectors"] == 0xE0000
 out = root / "dist/right-central"
-variants = ["right-central-left","right-central-tb-rynk","right-central-madula-tb"]
+variants = ["right-central-left"] + [name for module in ["tb", "lpps", "iqs"]
+    for name in [f"right-central-{module}-rynk", f"right-central-madula-{module}"]]
 for variant in variants:
     data = (out / (variant+".uf2")).read_bytes()
     assert len(data)%512 == 0
@@ -39,7 +40,7 @@ for variant in variants:
         assert w[5]==offset//512 and w[6]==len(data)//512
         assert w[3]+w[4]<=0xD4000, "Firmware must not overwrite either topology's settings"
 manifest = {
- "topology":"right central / left peripheral 0 / Madula TB peripheral 1",
+ "topology":"right central / left peripheral 0 / Madula peripheral 1",
  "commit":subprocess.check_output(["git","rev-parse","HEAD"],cwd=root,text=True).strip(),
  "working_tree_dirty":bool(subprocess.check_output(["git","status","--porcelain"],cwd=root,text=True).strip()),
  "hardware_tested":False,
@@ -50,4 +51,4 @@ manifest = {
 (out/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
 (out/"SHA256SUMS").write_text("".join(hashlib.sha256(f.read_bytes()).hexdigest()+"  "+f.name+"\n"
     for f in sorted(out.iterdir()) if f.suffix in [".uf2",".elf",".json"]))
-print("Generated topology, all layer mappings, encoder order and 3 UF2 address ranges verified.")
+print("Generated topology, all layer mappings, encoder order and 7 UF2 address ranges verified.")

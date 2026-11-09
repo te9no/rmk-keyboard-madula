@@ -17,7 +17,12 @@ impl Runnable for RadialController {
                 Action::User(22) => { button = event.keyboard_event.pressed; 0 }
                 #[cfg(feature = "iqs9151")]
                 Action::User(id) if event.keyboard_event.pressed => {
-                    if let Some(pulses) = crate::iqs9151_tune::adjust(id) { crate::status_led::pulse(pulses); }
+                    if let Some(_pulses) = crate::iqs9151_tune::adjust(id) {
+                        #[cfg(not(feature = "right-central"))]
+                        crate::status_led::pulse(_pulses);
+                        #[cfg(feature = "right-central")]
+                        crate::iqs9151_tune::send_split();
+                    }
                     continue;
                 }
                 _ => continue,

@@ -150,6 +150,8 @@ impl<S: SplitWriter + SplitReader> SplitPeripheral<S> {
                                 rmk_types::led_indicator::LedIndicator::from_bits(indicator),
                             ));
                         }
+                        #[cfg(feature = "madula_tune_split")]
+                        SplitMessage::MadulaTune(state) => super::MADULA_TUNE.sender().send(state),
                         SplitMessage::Layer(layer) => {
                             // Publish Layer event
                             publish_event(LayerChangeEvent::new(layer));

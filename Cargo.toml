@@ -27,7 +27,7 @@ json = "=0.12.4"
 xz2 = "=0.1.7"
 
 [features]
-right-central = []
+right-central = ["rmk/madula_tune_split"]
 # Experimental Windows Dial pacing; total angle stays 18 degrees per detent.
 dial-smooth = []
 boot-audit = ["panic-probe/boot-recovery"]
@@ -75,9 +75,9 @@ lto = "fat"
 [[bin]]
 name = "cornix-right-central"
 path = "src/right_central.rs"
-required-features = ["right-central", "pmw3610", "madula-rynk"]
+required-features = ["right-central", "madula-rynk"]
 
 [[bin]]
-name = "madula-tb-peripheral"
+name = "madula-peripheral"
 path = "src/madula_peripheral.rs"
-required-features = ["right-central", "pmw3610", "battery-audit"]
+required-features = ["right-central", "battery-audit"]

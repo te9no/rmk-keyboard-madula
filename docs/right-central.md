@@ -1,6 +1,6 @@
-# 右手セントラル試作版（TB / Rynk）
+# 右手セントラル試作版（TB・LPPS・IQS / Rynk）
 
-接続: Cornix左 → Cornix右 ← Madula TB。PCへのUSB/BLE接続とRynkはCornix右が担当します。
+接続: Cornix左 → Cornix右 ← Madula。PCへのUSB/BLE接続とRynkはCornix右が担当します。
 右単体でも右のキーとDialを使える構成です。実機での接続・入力確認は未実施です。
 
 ## ビルド
@@ -9,15 +9,19 @@
 通常版の scripts/build-release.sh は従来のMadulaセントラル構成のままです。
 試作版は dist/right-central/ に出力します。
 
-| 書き込み先 | UF2 |
-| --- | --- |
-| Cornix左 | right-central-left.uf2 |
-| Cornix右 | right-central-tb-rynk.uf2 |
-| Madula（PMW3610） | right-central-madula-tb.uf2 |
+左側は全モジュール共通です。右側とMadula側は、取り付けるモジュールに合わせて同じ行の組を選んでください。
+
+| モジュール | Cornix右 | Madula |
+| --- | --- | --- |
+| TB（PMW3610） | right-central-tb-rynk.uf2 | right-central-madula-tb.uf2 |
+| LPPS（ADS1220） | right-central-lpps-rynk.uf2 | right-central-madula-lpps.uf2 |
+| IQS9151 | right-central-iqs-rynk.uf2 | right-central-madula-iqs.uf2 |
+
+Cornix左には `right-central-left.uf2` を書き込みます。
 
 3台をこのセットで揃えてください。旧構成との混在はエンコーダー番号・周辺機IDが異なり非対応です。
 MadulaのUSBはログ・書き込み用です。PCの入力先として接続するのは右側です。
-LPPS・IQSはこの試作版の対象外です。
+Vial版はこの試作版の対象外です。
 
 ## 保持する機能
 
@@ -25,7 +29,13 @@ LPPS・IQSはこの試作版の対象外です。
 RMKのエンコーダー採番はセントラルが先になるため、右をID 0、左をID 1へ変更し、
 各レイヤーのエンコーダー割り当てとRynkの表示IDも交換します。
 右のDial、左のホイールの意味は元の構成と同じです。
-MadulaのPMW3610ドライバーは移動をPointingEventで送り、右側で従来と同じ軸変換を一度だけ適用します。
+各センサードライバーは移動をPointingEventで送り、右側で従来と同じ軸変換を一度だけ適用します。
+TBはXY交換＋両軸反転、LPPSは両軸反転、IQSはセンサー側で回転設定済みのため追加変換なしです。
+IQSのタップ・ドラッグ・スクロール・スワイプは、周辺機ローカル(0,3..13)から
+中央の仮想キー(4,3..13)へ変換します。Rynk上の割り当てを維持します。
+IQSのUser18・19・23..31による調整は右側で処理し、設定全体をMadulaへ同期します。
+再接続時も最新の設定を再送します。設定はRAM上のみで、右側の再起動で初期値に戻ります。
+右セントラル版では調整時のLED点滅による段階表示は行いません。
 3個の物理ボタンは周辺機ローカル(0,0..2)から中央の(4,0..2)へ変換します。
 Madulaの電圧計測・LEDと、左右のLEDを起動します。右のLEDはPC接続状態を表示します。
 
@@ -41,6 +51,7 @@ Madulaの残量は分割通信の周辺機ステータスへ送ります。右�
 PCの主バッテリー表示にMadulaの残量を代理表示する実装はしていません。
 ポインター入力が無線区間を1回増やすため、遅延・取りこぼし・消費電力は要実測です。
 
-実機では3台接続、全キー、左右エンコーダー、TBの上下左右と3ボタン、
+実機では3台接続、全キー、左右エンコーダー、各モジュールの上下左右と3ボタン、
+IQSのタップ・ドラッグ・2本指スクロール・3本指スワイプ・感度変更と再接続後の反映、
 Rynkでの変更保存、スリープ復帰、再起動、USB/BLE切替を確認してください。
 Madulaや左を切断しても右単体が入力できることも確認対象です。

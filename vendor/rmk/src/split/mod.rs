@@ -101,6 +101,9 @@ pub(crate) enum SplitMessage {
     /// Peripheral → Central: confirm mark_updated succeeded, about to reset.
     #[cfg(feature = "dfu_split")]
     FirmwareUpdateConfirm,
+    /// Madula IQS tuning snapshot; appended to preserve existing wire IDs.
+    #[cfg(feature = "madula_tune_split")]
+    MadulaTune([u8; 7]),
 }
 
 // -----------------------------------------------------------------------
@@ -142,3 +145,9 @@ impl<'de> Deserialize<'de> for FirmwareChunkData {
 impl MaxSize for FirmwareChunkData {
     const POSTCARD_MAX_SIZE: usize = 258;
 }
+
+/// Latest IQS tuning state. A new receiver gets the current snapshot on reconnect.
+#[cfg(feature = "madula_tune_split")]
+pub static MADULA_TUNE: embassy_sync::watch::Watch<
+    embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex, [u8; 7], 4
+> = embassy_sync::watch::Watch::new();

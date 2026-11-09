@@ -25,8 +25,9 @@ fn main() {
         "Select exactly one host variant: CornixTP, Madula Vial or Madula Rynk");
     let right_central = env::var_os("CARGO_FEATURE_RIGHT_CENTRAL").is_some();
     assert!(!right_central || (!cornix_tp && !madula_vial), "right-central prototype uses Rynk only");
-    assert!(!right_central || (env::var_os("CARGO_FEATURE_LPPS").is_none()
-        && env::var_os("CARGO_FEATURE_IQS9151").is_none()), "right-central prototype supports TB only");
+    let module_count = ["LPPS", "PMW3610", "IQS9151"].iter()
+        .filter(|name| env::var_os(format!("CARGO_FEATURE_{name}")).is_some()).count();
+    assert!(module_count <= 1, "Select only one Madula input module");
     let config = if cornix_tp {
         root.join("cornix-tp.toml")
     } else if madula_vial || madula_rynk || right_central {

@@ -208,6 +208,8 @@ impl<T: SplitReader + SplitWriter> PeripheralManager<T> {
         #[cfg(feature = "display")]
         let mut modifier_sub = crate::event::ModifierEvent::subscriber();
         let mut sleep_sub = crate::event::SleepStateEvent::subscriber();
+        #[cfg(feature = "madula_tune_split")]
+        let mut madula_tune = super::MADULA_TUNE.receiver().unwrap();
 
         // Send the current state once on startup so the peripheral matches us
         // even when no transition has happened since the central booted.
@@ -247,6 +249,10 @@ impl<T: SplitReader + SplitWriter> PeripheralManager<T> {
                         }
                         SplitMessage::ClearPeer
                     },
+                    with_feature("madula_tune_split"): state = async {
+                        if self.id != 1 { core::future::pending::<()>().await; }
+                        madula_tune.changed().await
+                    }.fuse() => SplitMessage::MadulaTune(state),
                     e = sleep_sub.next_event().fuse() => SplitMessage::SleepState(e.0),
                     with_feature("display"): e = wpm_sub.next_event().fuse() => SplitMessage::Wpm(e.0),
                     with_feature("display"): e = modifier_sub.next_event().fuse() => SplitMessage::Modifier(e.modifier.into_bits()),

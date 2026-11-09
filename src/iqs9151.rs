@@ -147,7 +147,7 @@ pub async fn run(bus: Twim<'static>, ready: Input<'static>) {
                     // Tap-drag and three-finger drag hold the left button (virtual column 3).
                     if let Some(pressed) = output.left {
                         log::info!("IQS9151 left={}", pressed);
-                        publish_event_async(KeyboardEvent::key(4, 3, pressed)).await;
+                        publish_event_async(KeyboardEvent::key(if cfg!(feature = "right-central") { 0 } else { 4 }, 3, pressed)).await;
                         left_down = pressed;
                     }
                     if output.tap != 0 {
@@ -187,7 +187,7 @@ pub async fn run(bus: Twim<'static>, ready: Input<'static>) {
                 Err(e) => {
                     log::warn!("IQS9151 read failed: {:?}; output disabled", e);
                     // Re-init drops the gesture state; never leave a tap-drag button down.
-                    if left_down { publish_event_async(KeyboardEvent::key(4, 3, false)).await; }
+                    if left_down { publish_event_async(KeyboardEvent::key(if cfg!(feature = "right-central") { 0 } else { 4 }, 3, false)).await; }
                     break;
                 }
             }
@@ -202,7 +202,7 @@ pub async fn run(bus: Twim<'static>, ready: Input<'static>) {
 async fn tap_virtual(col: u8) {
     // Distinct virtual positions preserve physical Madula button bindings.
     // Await both events: never drop a release on a full event queue.
-    publish_event_async(KeyboardEvent::key(4, col, true)).await;
+    publish_event_async(KeyboardEvent::key(if cfg!(feature = "right-central") { 0 } else { 4 }, col, true)).await;
     Timer::after_millis(8).await;
-    publish_event_async(KeyboardEvent::key(4, col, false)).await;
+    publish_event_async(KeyboardEvent::key(if cfg!(feature = "right-central") { 0 } else { 4 }, col, false)).await;
 }

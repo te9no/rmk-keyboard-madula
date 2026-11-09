@@ -36,6 +36,7 @@ features = [
 ]
 
 [features]
+madula_tune_split = []
 _ble = [
     "dep:trouble-host",
     "dep:bt-hci",

@@ -1,4 +1,4 @@
-# Experimental topology: central=right, peripheral 0=left, peripheral 1=Madula TB.
+# Experimental topology: central=right, peripheral 0=left, peripheral 1=Madula (TB / LPPS / IQS).
 [split]
 connection = "ble"
 

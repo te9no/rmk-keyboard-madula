@@ -80,3 +80,69 @@ pub fn adjust(user: u8) -> Option<u8> {
     log::info!("IQS9151 tune {:?}", current());
     Some(pulses)
 }
+
+// Snapshot, rather than key commands, makes reconnect restore the latest tuning.
+#[cfg(feature = "right-central")]
+pub fn send_split() {
+    rmk::split::MADULA_TUNE.sender().send(snapshot());
+}
+
+#[cfg(any(test, feature = "right-central"))]
+fn snapshot() -> [u8; 7] {
+    [
+        CURSOR_LEVEL.load(Relaxed), SCROLL_LEVEL.load(Relaxed), TAP_LEVEL.load(Relaxed),
+        u8::from(TAP_DRAG.load(Relaxed)), u8::from(THREE_DRAG.load(Relaxed)),
+        LIFT_LEVEL.load(Relaxed), FILTER_LEVEL.load(Relaxed),
+    ]
+}
+
+#[cfg(any(test, feature = "right-central"))]
+fn apply_split(s: [u8; 7]) {
+    if !(CURSOR.0..=CURSOR.2).contains(&s[0]) || s[1] > SCROLL.2
+        || !(TAP.0..=TAP.2).contains(&s[2]) || s[3] > 1 || s[4] > 1
+        || s[5] as usize >= LIFT_HOLDS.len() || s[6] as usize >= FILTER_BETAS.len() { return; }
+    CURSOR_LEVEL.store(s[0], Relaxed);
+    SCROLL_LEVEL.store(s[1], Relaxed);
+    TAP_LEVEL.store(s[2], Relaxed);
+    TAP_DRAG.store(s[3] != 0, Relaxed);
+    THREE_DRAG.store(s[4] != 0, Relaxed);
+    LIFT_LEVEL.store(s[5], Relaxed);
+    FILTER_LEVEL.store(s[6], Relaxed);
+}
+
+#[cfg(feature = "right-central")]
+#[embassy_executor::task]
+pub async fn receive_split() {
+    let mut receiver = rmk::split::MADULA_TUNE.receiver().unwrap();
+    loop { apply_split(receiver.changed().await); }
+}
+
+#[cfg(test)]
+mod split_tests {
+    use super::*;
+    #[test]
+    fn snapshot_restores_all_tuning_and_rejects_invalid_state() {
+        adjust(29);
+        let default = current();
+        let defaults = snapshot();
+        for id in [24, 26, 28, 30, 18, 19, 31] { adjust(id); }
+        let changed = current();
+        let state = snapshot();
+        assert_ne!(default, changed);
+        adjust(29);
+        assert_eq!(current(), default);
+        apply_split(state);
+        assert_eq!(current(), changed);
+        // Lost-link replay is idempotent, unlike replaying increment commands.
+        apply_split(state);
+        assert_eq!(current(), changed);
+        for (index, invalid) in [(0, 0), (0, 9), (1, 7), (2, 5), (2, 17),
+                                  (3, 2), (4, 2), (5, 3), (6, 4)] {
+            let mut bad = defaults; bad[index] = invalid;
+            apply_split(bad);
+            assert_eq!(current(), changed);
+        }
+        apply_split(defaults);
+        assert_eq!(current(), default);
+    }
+}

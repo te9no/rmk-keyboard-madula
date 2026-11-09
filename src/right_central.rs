@@ -3,17 +3,23 @@
 use rmk::macros::rmk_central;
 mod radial_controller;
 mod right_central_led;
+#[cfg(feature = "iqs9151")]
+mod iqs9151_tune;
+#[cfg(not(any(feature = "pmw3610", feature = "lpps", feature = "iqs9151")))]
+compile_error!("Select a Madula input module");
 #[rmk_central]
 mod keyboard_central {
     #[Override(entry)]
     fn run() {
+        #[cfg(feature = "iqs9151")]
+        crate::iqs9151_tune::send_split();
         let mut pointer = rmk::input_device::pointing::PointingProcessor::new(
             &keymap,
             rmk::input_device::pointing::PointingProcessorConfig {
                 device_id: 0,
-                invert_x: true,
-                invert_y: true,
-                swap_xy: true,
+                invert_x: !cfg!(feature = "iqs9151"),
+                invert_y: !cfg!(feature = "iqs9151"),
+                swap_xy: cfg!(feature = "pmw3610"),
             },
         );
         let mut dial = crate::radial_controller::RadialController;
@@ -24,7 +30,7 @@ mod keyboard_central {
             ble_controller, ble_addr, rmk_config,
             [
                 rmk::split::PeripheralMatrixConfig { rows: 4, cols: 7, row_offset: 0, col_offset: 0 },
-                rmk::split::PeripheralMatrixConfig { rows: 1, cols: 3, row_offset: 4, col_offset: 0 },
+                rmk::split::PeripheralMatrixConfig { rows: 1, cols: 14, row_offset: 4, col_offset: 0 },
             ],
         );
         #[cfg(any(feature = "madula-vial", feature = "madula-rynk"))]
