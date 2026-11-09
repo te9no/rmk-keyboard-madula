@@ -23,35 +23,17 @@ fn main() {
     let madula_rynk = env::var_os("CARGO_FEATURE_MADULA_RYNK").is_some();
     assert!(usize::from(cornix_tp) + usize::from(madula_vial) + usize::from(madula_rynk) <= 1,
         "Select exactly one host variant: CornixTP, Madula Vial or Madula Rynk");
-    let right_central = env::var_os("CARGO_FEATURE_RIGHT_CENTRAL").is_some();
-    assert!(!right_central || (!cornix_tp && !madula_vial), "right-central prototype uses Rynk only");
-    assert!(!right_central || (env::var_os("CARGO_FEATURE_LPPS").is_none()
-        && env::var_os("CARGO_FEATURE_IQS9151").is_none()), "right-central prototype supports TB only");
     let config = if cornix_tp {
         root.join("cornix-tp.toml")
-    } else if madula_vial || madula_rynk || right_central {
+    } else if madula_vial || madula_rynk {
         // Keep the keymap, matrix and storage source of truth in keyboard.toml.
-        let mut source = fs::read_to_string(root.join("keyboard.toml")).unwrap();
-        if right_central {
-            let split = source.find("[split]").expect("split section");
-            source.truncate(split);
-            source.push_str(&fs::read_to_string(root.join("right-central-split.toml")).unwrap());
-            // Separate role-specific storage keeps original topology settings intact.
-            source = source.replace("start_addr = 0xE0000", "start_addr = 0xD4000")
-                .replace("num_sectors = 16", "num_sectors = 12")
-                .replace("Madula RMK", "Madula Right RMK");
-            // Central encoder is ID 0, then left peripheral is ID 1.
-            source = source.replace(
-                "encoders = [[\"MouseWheelUp\", \"MouseWheelDown\"], [\"User20\", \"User21\"]]",
-                "encoders = [[\"User20\", \"User21\"], [\"MouseWheelUp\", \"MouseWheelDown\"]]");
-            source = source.replace("(e,0)", "(e,TEMP)").replace("(e,1)", "(e,0)").replace("(e,TEMP)", "(e,1)");
-        }
+        let source = fs::read_to_string(root.join("keyboard.toml")).unwrap();
         assert_eq!(source.matches("vial_enabled = false").count(), 1);
         let host = if madula_rynk {
             "vial_enabled = false\nrynk_enabled = true\nunlock_keys = [[0, 0], [0, 7]]\ninsecure = false"
-        } else if madula_vial {
+        } else {
             "vial_enabled = true\nunlock_keys = [[0, 0], [0, 7]]\ninsecure = false"
-        } else { "vial_enabled = false" };
+        };
         let configured = source.replacen(
             "vial_enabled = false",
             host,
@@ -87,7 +69,6 @@ fn main() {
     println!("cargo:rustc-link-search={}", out.display());
     println!("cargo:rerun-if-changed=memory.x");
     println!("cargo:rerun-if-changed=keyboard.toml");
-    println!("cargo:rerun-if-changed=right-central-split.toml");
     println!("cargo:rustc-link-arg=--nmagic");
     println!("cargo:rustc-link-arg=-Tlink.x");
     println!("cargo:rustc-link-arg=-Tdefmt.x");
