@@ -1,5 +1,7 @@
 #![no_main]
 #![no_std]
+#[cfg(feature = "right-central")]
+compile_error!("Use cornix-right-central or madula-tb-peripheral for right-central topology");
 use rmk::macros::rmk_peripheral;
 mod peripheral_led;
 #[rmk_peripheral(id = 1)]

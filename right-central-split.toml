@@ -1,0 +1,59 @@
+# Experimental topology: central=right, peripheral 0=left, peripheral 1=Madula TB.
+[split]
+connection = "ble"
+
+[split.central]
+rows = 4
+cols = 7
+row_offset = 0
+col_offset = 7
+
+[split.central.matrix]
+matrix_type = "normal"
+row2col = false
+row_pins = ["P1_09", "P0_28", "P0_03", "P1_10"]
+col_pins = ["P0_30", "P0_31", "P0_29", "P0_02", "P1_13", "P0_10", "P0_09"]
+
+# Right Cornix EC11: same pins/pull-ups as ZMK; 80 steps / 20 triggers = 4.
+# Central encoder is ID 0; generated keymap swaps encoder actions to preserve Dial.
+[[split.central.input_device.encoder]]
+pin_a = "P1_04"
+pin_b = "P1_06"
+internal_pullup = true
+phase = "resolution"
+resolution = 4
+reverse = false
+
+[[split.peripheral]]
+rows = 4
+cols = 7
+row_offset = 0
+col_offset = 0
+
+[split.peripheral.matrix]
+matrix_type = "normal"
+row2col = false
+row_pins = ["P0_30", "P0_31", "P0_29", "P0_02"]
+col_pins = ["P0_28", "P0_03", "P1_10", "P1_11", "P1_13", "P0_09", "P0_10"]
+
+# Left EC11, global encoder ID 1 in this topology. Match ZMK pull-ups and 80/20 resolution.
+[[split.peripheral.input_device.encoder]]
+pin_a = "P1_04"
+pin_b = "P1_06"
+internal_pullup = true
+phase = "resolution"
+resolution = 4
+reverse = false
+
+
+[[split.peripheral]]
+rows = 1
+cols = 3
+row_offset = 4
+col_offset = 0
+
+[split.peripheral.matrix]
+matrix_type = "direct_pin"
+direct_pin_low_active = true
+direct_pins = [["P0_04", "P0_05", "P1_11"]]
+

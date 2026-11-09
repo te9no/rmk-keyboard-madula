@@ -1,5 +1,7 @@
 #![no_main]
 #![no_std]
+#[cfg(feature = "right-central")]
+compile_error!("Use cornix-right-central or madula-tb-peripheral for right-central topology");
 #[cfg(feature = "cornix-tp")]
 compile_error!("Build --bin cornix-tp for the CornixTP central");
 use rmk::macros::rmk_central;
